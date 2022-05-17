@@ -58,3 +58,10 @@ export async function storeAuthenticator(data) {
 export async function getUserFromOTPManager(email) {
   return client.db("b30wd").collection("otp-manager").findOne({ email: email });
 }
+
+export function updateOTPforUser(data) {
+  return client
+    .db("b30wd")
+    .collection("otp-manager")
+    .updateOne({ email: data.email }, { $set: data });
+}
