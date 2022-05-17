@@ -81,7 +81,7 @@ router.post("/gen-otp", async (req, res) => {
   const text = `Dear Sir/Madam
   Your One Time Password (OTP) is ${email_otp}`;
   await MailTransporter(email, subject, text);
-  //sendOTPtoPhone({ number: phoneNumber, phone_otp: phone_otp });
+  sendOTPtoPhone({ number: phoneNumber, phone_otp: phone_otp });
 
   res.status(200).send({ message: "OTP sent successfully" });
 });

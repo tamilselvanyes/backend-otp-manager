@@ -12,6 +12,7 @@ app.use(express.json());
 dotenv.config();
 app.use(bodyParser.json());
 app.use(cors());
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URL = process.env.MONGO_URL;
