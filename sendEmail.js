@@ -19,7 +19,7 @@ export const MailTransporter = async (email, subject, text) => {
       subject: subject,
       text: text,
     });
-    console.log("Email sent successfully");
+    return true;
   } catch (error) {
     console.log(error);
   }

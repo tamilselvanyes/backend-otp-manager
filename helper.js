@@ -65,3 +65,7 @@ export function updateOTPforUser(data) {
     .collection("otp-manager")
     .updateOne({ email: data.email }, { $set: data });
 }
+
+export function getUserOTPdata(email) {
+  return client.db("b30wd").collection("otp-manager").findOne({ email: email });
+}

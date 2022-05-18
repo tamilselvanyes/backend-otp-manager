@@ -1,15 +1,22 @@
-import fast2sms from "fast-two-sms";
+import unirest from "unirest";
+
+const req = unirest("GET", "https://www.fast2sms.com/dev/bulkV2");
 
 export async function sendOTPtoPhone(data) {
-  console.log(fast2sms);
-  var options = {
+  req.query({
     authorization: process.env.SMS_API_KEY,
-    message: `Dear Sir/Madam
-    Tamil Selvan app OTP is ${data.phone_otp}`,
-    numbers: [`${data.number}`],
-    sender_id: "OTP-MANAGER",
-  };
-  fast2sms.sendMessage(options).then((response) => {
-    console.log(response);
+    variables_values: `${data.phone_otp}`,
+    route: "otp",
+    numbers: `${data.number}`,
+  });
+
+  req.headers({
+    "cache-control": "no-cache",
+  });
+
+  req.end(function (res) {
+    if (res.error) throw new Error(res.error);
+
+    return res.body.return;
   });
 }

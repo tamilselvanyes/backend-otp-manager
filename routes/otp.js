@@ -6,6 +6,7 @@ import {
   getUserFromOTPManager,
   getUserByEmail,
   updateOTPforUser,
+  getUserOTPdata,
 } from "../helper.js";
 import { sendOTPtoPhone } from "../sendOTPtoPhone.js";
 import { MailTransporter } from "../sendEmail.js";
@@ -48,6 +49,9 @@ router.post("/totp-secret", async (request, response, next) => {
 });
 
 router.post("/gen-otp", async (req, res) => {
+  //testing code
+  res.status(200).send({ message: "OTP sent successfully" });
+  return;
   const { email, phoneNumber } = req.body;
   const userFromDb = await getUserByEmail(email);
   if (!userFromDb) {
@@ -80,8 +84,72 @@ router.post("/gen-otp", async (req, res) => {
   const subject = "OTP Verification";
   const text = `Dear Sir/Madam
   Your One Time Password (OTP) is ${email_otp}`;
-  await MailTransporter(email, subject, text);
-  sendOTPtoPhone({ number: phoneNumber, phone_otp: phone_otp });
+  const email_sent = await MailTransporter(email, subject, text);
+  const OTP_sent = sendOTPtoPhone({
+    number: phoneNumber,
+    phone_otp: phone_otp,
+  });
+  if (OTP_sent === true && email_sent === true) {
+    res.status(200).send({ message: "OTP sent successfully" });
+  } else {
+    res.send({ message: "OTP sent failed" });
+  }
+});
 
-  res.status(200).send({ message: "OTP sent successfully" });
+router.post("/verify-otp", async (req, res) => {
+  const { email_otp, phone_otp, email } = req.body;
+  console.log(email_otp + phone_otp + email);
+
+  if (email === null) {
+    res.send({ message: "Email is required..." });
+    return;
+  }
+
+  const data = await getUserOTPdata(email);
+
+  if (data === null) {
+    res.send({ message: "User does not exist" });
+    return;
+  }
+
+  console.log(data);
+  //checking is OTP expired
+  console.log(data.ExpiresIn + "Check" + Date.now());
+  if (data.ExpiresIn < Date.now()) {
+    res.send({ message: "Token expired" });
+    return;
+  }
+
+  //checking the mail OTP
+
+  let email_verify = false;
+  let phone_verify = false;
+
+  if (data.email_otp === email_otp) {
+    email_verify = true;
+  }
+
+  if (data.phone_otp === phone_otp) {
+    phone_verify = true;
+  }
+
+  if (email_verify && phone_verify) {
+    res.send({ message: "Both verified" });
+    return;
+  }
+
+  if (email_verify === false && phone_verify === false) {
+    res.send({ message: "Both failed" });
+    return;
+  }
+
+  if (email_verify === true && phone_verify === false) {
+    res.send({ message: "Email verified: Phone failed" });
+    return;
+  }
+
+  if (email_verify === false && phone_verify === true) {
+    res.send({ message: "Email failed: Phone verified" });
+    return;
+  }
 });
